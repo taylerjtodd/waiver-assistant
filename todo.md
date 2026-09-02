@@ -18,12 +18,12 @@ A fantasy football waiver wire assistant and trade analysis web application buil
 ---
 
 ## Phase 2: Sleeper API Integration & State Management
-- [ ] Implement Sleeper API client:
+- [x] Implement Sleeper API client:
   - Fetch league info (`/v1/league/<league_id>`)
   - Fetch league users/members (`/v1/league/<league_id>/users`)
   - Fetch rosters (`/v1/league/<league_id>/rosters`)
   - Fetch/cache Sleeper NFL player database (`/v1/players/nfl` with IndexedDB/localStorage caching to prevent repeated large payloads)
-- [ ] LocalStorage management:
+- [x] LocalStorage management:
   - Store and manage saved Sleeper League IDs with metadata (League Name, Season, Avatar, User's team)
   - Quick league switcher dropdown & recent leagues bar
   - Active league selector and refresh data mechanism
