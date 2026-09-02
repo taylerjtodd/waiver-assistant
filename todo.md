@@ -31,17 +31,17 @@ A fantasy football waiver wire assistant and trade analysis web application buil
 ---
 
 ## Phase 3: CSV Ingestion & Player Matching Engine
-- [ ] Drag-and-drop CSV upload component with file picker fallback
-- [ ] Robust CSV parsing & validation for:
+- [x] Drag-and-drop CSV upload component with file picker fallback
+- [x] Robust CSV parsing & validation for:
   - `RK` / Ranking
   - `PLAYER NAME` / Player
   - `TEAM` / NFL Team
   - `POS` / Position (e.g. `RB`, `RB1`, `WR12`, `FLEX`)
-- [ ] Player Matching & Normalization Engine:
+- [x] Player Matching & Normalization Engine:
   - Normalize names (handling suffixes like Jr., III, II, punctuation, apostrophes, and common nicknames)
   - Match CSV player entries with Sleeper player IDs & roster assignments
   - Determine roster status: `Free Agent (Available)`, `Rostered: <Team Name>`, `Reserve/IR`, `Taxi`
-- [ ] Sample CSV template download & sample data loader for quick preview
+- [x] Sample CSV template download & sample data loader for quick preview
 
 ---
 
