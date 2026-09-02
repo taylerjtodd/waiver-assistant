@@ -46,12 +46,12 @@ A fantasy football waiver wire assistant and trade analysis web application buil
 ---
 
 ## Phase 4: TanStack Table & Rich Filtering UI
-- [ ] Build high-performance Table component using TanStack Table v8:
+- [x] Build high-performance Table component using TanStack Table v8:
   - Columns: Rank, Player Name, Position (with positional badge/rank), NFL Team, Sleeper Roster / Availability Status, Action/Select
   - Column sorting (asc/desc) with visual indicators
   - Search bar (instant filter across name and NFL team)
   - Multi-select row selection for trade comparison & drop planning
-- [ ] Advanced Filter Bar:
+- [x] Advanced Filter Bar:
   - Roster status filters: `All`, `Free Agents Only`, `Rostered Only`
   - Multi-select team/roster filter (select Free Agents + Team A + Team B to analyze trades or drop decisions)
   - Position filter tabs/dropdown (`ALL`, `QB`, `RB`, `WR`, `TE`, `K`, `DEF`, `FLEX`)

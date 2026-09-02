@@ -42,7 +42,7 @@ function MainDashboard() {
                   Waiver Assistant
                 </span>
                 <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Phase 3 Live
+                  Phase 4 Live
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-medium">Fantasy Football Decision Engine</p>
@@ -149,7 +149,7 @@ function MainDashboard() {
                   </h3>
                   <p className="text-xs text-slate-400">
                     {activeTab === 'waiver' 
-                      ? 'Identify drop candidates and compare free agent upgrades (Coming in Phase 4/5)' 
+                      ? 'Identify drop candidates and compare free agent upgrades (Coming in Phase 5)' 
                       : 'Side-by-side roster trade evaluator (Coming in Phase 5)'}
                   </p>
                 </div>
@@ -176,17 +176,17 @@ function MainDashboard() {
               Implementation Progress
             </h2>
             <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-              Phase 3 Complete
+              Phase 4 Complete
             </span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
               <div className="flex items-center gap-2 text-emerald-300 font-semibold text-sm mb-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 Phase 1: Setup & Build
               </div>
               <p className="text-xs text-slate-400">
-                React 19, TypeScript, Tailwind CSS, TanStack Table, PapaParse, and GitHub Actions CI/CD.
+                React 19, TypeScript, Tailwind CSS, TanStack Table, PapaParse, and GitHub Actions.
               </p>
             </div>
             <div className="p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
@@ -195,7 +195,7 @@ function MainDashboard() {
                 Phase 2: Sleeper API & State
               </div>
               <p className="text-xs text-slate-400">
-                Sleeper API client, IndexedDB NFL player caching, LocalStorage league switcher, and My Team selector.
+                Sleeper API client, IndexedDB NFL player caching, LocalStorage league switcher, and My Team.
               </p>
             </div>
             <div className="p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
@@ -204,7 +204,16 @@ function MainDashboard() {
                 Phase 3: CSV & Matching Engine
               </div>
               <p className="text-xs text-slate-400">
-                Drag-and-drop CSV upload, fuzzy name & defense normalization, Sleeper matching, and sample datasets.
+                Drag-and-drop CSV upload, fuzzy name normalization, and Sleeper database matching.
+              </p>
+            </div>
+            <div className="p-4 rounded-lg bg-emerald-950/20 border border-emerald-500/30">
+              <div className="flex items-center gap-2 text-emerald-300 font-semibold text-sm mb-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                Phase 4: TanStack Table & Filters
+              </div>
+              <p className="text-xs text-slate-400">
+                TanStack Table v8, multi-field search, multi-team filter, rank slider, multi-select & export.
               </p>
             </div>
           </div>

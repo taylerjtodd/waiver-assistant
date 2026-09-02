@@ -1,20 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { 
   FileSpreadsheet, 
-  Search, 
   Download, 
   Trash2, 
   Upload, 
-  ShieldAlert, 
-  CheckCircle2, 
-  UserX
+  ShieldAlert
 } from 'lucide-react';
 import { useRankings } from '../../context/RankingsContext';
 import { useSleeper } from '../../context/SleeperContext';
 import { CsvDropzone } from './CsvDropzone';
 import { MatchedRankingPlayer } from '../../lib/rankings/types';
+import { RankingsFilterBar, FilterState } from './RankingsFilterBar';
+import { RankingsTable } from './RankingsTable';
+import { SelectedPlayersBar } from './SelectedPlayersBar';
 
-// Position color mapping
+// Position color mapping export for badges
 export function getPositionBadgeClass(pos: string): string {
   const p = pos.toUpperCase();
   switch (p) {
@@ -47,50 +47,109 @@ export const RankingsPreviewTable: React.FC = () => {
   } = useRankings();
   const { league } = useSleeper();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [positionFilter, setPositionFilter] = useState<string>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'FA' | 'ROSTERED' | 'MY_TEAM'>('ALL');
+  const maxRank = useMemo(() => {
+    if (!dataset || dataset.items.length === 0) return 500;
+    return Math.max(...dataset.items.map((i) => i.rank), dataset.items.length);
+  }, [dataset]);
 
-  // Filter items based on search and filters
+  const defaultFilters: FilterState = useMemo(() => ({
+    searchQuery: '',
+    position: 'ALL',
+    status: 'ALL',
+    selectedRosterIds: [],
+    includeFreeAgents: true,
+    minRank: 1,
+    maxRank: maxRank,
+    tierFilter: null,
+  }), [maxRank]);
+
+  const [filters, setFilters] = useState<FilterState>(defaultFilters);
+
+  const resetFilters = useCallback(() => {
+    setFilters({
+      searchQuery: '',
+      position: 'ALL',
+      status: 'ALL',
+      selectedRosterIds: [],
+      includeFreeAgents: true,
+      minRank: 1,
+      maxRank: maxRank,
+      tierFilter: null,
+    });
+  }, [maxRank]);
+
+  // Filter items based on search and multi-criteria filters
   const filteredItems = useMemo<MatchedRankingPlayer[]>(() => {
     if (!dataset) return [];
 
     return dataset.items.filter((item) => {
-      // Position filter
-      if (positionFilter !== 'ALL') {
+      // 1. Position filter
+      if (filters.position !== 'ALL') {
         const itemPos = item.pos.toUpperCase();
-        if (positionFilter === 'FLEX') {
+        if (filters.position === 'FLEX') {
           if (!['RB', 'WR', 'TE'].includes(itemPos)) return false;
-        } else if (itemPos !== positionFilter) {
+        } else if (filters.position === 'DEF') {
+          if (!['DEF', 'DST'].includes(itemPos)) return false;
+        } else if (itemPos !== filters.position) {
           return false;
         }
       }
 
-      // Status filter
-      if (statusFilter === 'FA' && item.rosterStatus.type !== 'free_agent') {
+      // 2. Status filter
+      if (filters.status === 'FA' && item.rosterStatus.type !== 'free_agent') {
         return false;
       }
-      if (statusFilter === 'ROSTERED' && item.rosterStatus.type === 'free_agent') {
+      if (filters.status === 'ROSTERED' && item.rosterStatus.type === 'free_agent') {
         return false;
       }
-      if (statusFilter === 'MY_TEAM' && !item.rosterStatus.isMyTeam) {
+      if (filters.status === 'MY_TEAM' && !item.rosterStatus.isMyTeam) {
         return false;
       }
 
-      // Search query filter (name, team, or rostered team name)
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase().trim();
-        const nameMatch = item.playerName.toLowerCase().includes(q) || item.originalCsvName.toLowerCase().includes(q);
+      // 3. Multi-Roster Selection filter
+      if (filters.selectedRosterIds.length > 0 || !filters.includeFreeAgents) {
+        const isFA = item.rosterStatus.type === 'free_agent';
+        const isSelectedRoster = item.rosterStatus.rosterId !== null && 
+          filters.selectedRosterIds.includes(item.rosterStatus.rosterId);
+
+        if (isFA && !filters.includeFreeAgents) {
+          return false;
+        }
+        if (!isFA && !isSelectedRoster) {
+          return false;
+        }
+        if (isFA && filters.selectedRosterIds.length > 0 && !filters.includeFreeAgents) {
+          return false;
+        }
+      }
+
+      // 4. Rank Range filter
+      if (item.rank < filters.minRank || item.rank > filters.maxRank) {
+        return false;
+      }
+
+      // 5. Tier filter
+      if (filters.tierFilter !== null && item.tier !== filters.tierFilter) {
+        return false;
+      }
+
+      // 6. Search query filter (name, team, or rostered team/owner name)
+      if (filters.searchQuery.trim()) {
+        const q = filters.searchQuery.toLowerCase().trim();
+        const nameMatch = item.playerName.toLowerCase().includes(q) || 
+          item.originalCsvName.toLowerCase().includes(q);
         const teamMatch = item.team ? item.team.toLowerCase().includes(q) : false;
         const rosterTeamMatch = item.rosterStatus.teamName ? item.rosterStatus.teamName.toLowerCase().includes(q) : false;
-        if (!nameMatch && !teamMatch && !rosterTeamMatch) {
+        const ownerMatch = item.rosterStatus.ownerDisplayName ? item.rosterStatus.ownerDisplayName.toLowerCase().includes(q) : false;
+        
+        if (!nameMatch && !teamMatch && !rosterTeamMatch && !ownerMatch) {
           return false;
         }
       }
 
       return true;
     });
-  }, [dataset, searchQuery, positionFilter, statusFilter]);
+  }, [dataset, filters]);
 
   // If no rankings dataset is currently loaded, render the Dropzone
   if (!dataset) {
@@ -114,7 +173,7 @@ export const RankingsPreviewTable: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {/* Dataset Summary Banner */}
       <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-5 backdrop-blur-md space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -145,7 +204,7 @@ export const RankingsPreviewTable: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Metrics Badges & Action Buttons */}
+          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-2">
             {unmatchedPlayers.length > 0 && (
               <button
@@ -213,234 +272,23 @@ export const RankingsPreviewTable: React.FC = () => {
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        {/* Search input */}
-        <div className="relative flex-1">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by player name, NFL team, or Sleeper roster..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs sm:text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50"
-          />
-        </div>
+      {/* Advanced Filter Bar */}
+      <RankingsFilterBar
+        filters={filters}
+        onFilterChange={setFilters}
+        onResetFilters={resetFilters}
+        totalCount={dataset.totalRows}
+        filteredCount={filteredItems.length}
+        maxAvailableRank={maxRank}
+      />
 
-        {/* Position and Status Filter Controls */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Status Tabs */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs">
-            <button
-              onClick={() => setStatusFilter('ALL')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                statusFilter === 'ALL' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setStatusFilter('FA')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                statusFilter === 'FA' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Free Agents
-            </button>
-            <button
-              onClick={() => setStatusFilter('ROSTERED')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                statusFilter === 'ROSTERED' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Rostered
-            </button>
-            <button
-              onClick={() => setStatusFilter('MY_TEAM')}
-              className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
-                statusFilter === 'MY_TEAM' ? 'bg-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              My Team
-            </button>
-          </div>
+      {/* TanStack Table View */}
+      <RankingsTable
+        data={filteredItems}
+      />
 
-          {/* Position Selector */}
-          <div className="flex items-center p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs overflow-x-auto">
-            {['ALL', 'QB', 'RB', 'WR', 'TE', 'FLEX', 'K', 'DEF'].map((pos) => (
-              <button
-                key={pos}
-                onClick={() => setPositionFilter(pos)}
-                className={`px-2.5 py-1 rounded-lg font-medium transition-all shrink-0 ${
-                  positionFilter === pos
-                    ? 'bg-slate-800 text-emerald-400 font-bold shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                {pos}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Table Container */}
-      <div className="rounded-2xl border border-slate-800 overflow-hidden bg-slate-900/60 shadow-xl backdrop-blur-md">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead className="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-medium tracking-wider uppercase text-[11px]">
-              <tr>
-                <th className="py-3.5 px-4 w-16 text-center">Rank</th>
-                <th className="py-3.5 px-4">Player</th>
-                <th className="py-3.5 px-3">Position</th>
-                <th className="py-3.5 px-3">NFL Team</th>
-                <th className="py-3.5 px-3">Bye</th>
-                <th className="py-3.5 px-4">Sleeper Roster Status</th>
-                <th className="py-3.5 px-3 text-center">Match</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredItems.length === 0 ? (
-                <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
-                    <UserX className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                    <p className="font-semibold text-slate-300">No matching players found</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Try adjusting your search query or position/status filters.</p>
-                  </td>
-                </tr>
-              ) : (
-                filteredItems.map((item) => {
-                  const isFA = item.rosterStatus.type === 'free_agent';
-                  const isMyTeam = item.rosterStatus.isMyTeam;
-
-                  return (
-                    <tr 
-                      key={`${item.id}-${item.rank}`}
-                      className={`transition-colors hover:bg-slate-800/40 ${
-                        isMyTeam ? 'bg-emerald-950/10' : ''
-                      }`}
-                    >
-                      {/* Rank */}
-                      <td className="py-3 px-4 text-center font-mono font-bold text-slate-200">
-                        #{item.rank}
-                      </td>
-
-                      {/* Player Info */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2.5">
-                          <div>
-                            <div className="font-semibold text-slate-100 flex items-center gap-1.5">
-                              <span>{item.playerName}</span>
-                              {item.tier && (
-                                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700">
-                                  T{item.tier}
-                                </span>
-                              )}
-                            </div>
-                            {item.sleeperPlayer?.injury_status && (
-                              <span className="inline-block mt-0.5 px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] font-semibold">
-                                {item.sleeperPlayer.injury_status}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </td>
-
-                      {/* Position */}
-                      <td className="py-3 px-3">
-                        <span className={`px-2 py-0.5 rounded-md font-semibold text-xs border ${getPositionBadgeClass(item.pos)}`}>
-                          {item.pos}{item.posRank ? item.posRank : ''}
-                        </span>
-                      </td>
-
-                      {/* NFL Team */}
-                      <td className="py-3 px-3 font-mono text-slate-300">
-                        {item.team || '—'}
-                      </td>
-
-                      {/* Bye */}
-                      <td className="py-3 px-3 font-mono text-slate-400 text-xs">
-                        {item.bye ? `W${item.bye}` : '—'}
-                      </td>
-
-                      {/* Sleeper Roster Status */}
-                      <td className="py-3 px-4">
-                        {isFA ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                            Free Agent (Available)
-                          </span>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            {item.rosterStatus.avatarUrl ? (
-                              <img
-                                src={item.rosterStatus.avatarUrl}
-                                alt=""
-                                className="w-6 h-6 rounded-full ring-1 ring-slate-700"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center text-[10px] font-bold">
-                                {item.rosterStatus.teamName?.[0] || 'T'}
-                              </div>
-                            )}
-                            <div>
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-medium text-slate-200 text-xs truncate max-w-[140px]">
-                                  {item.rosterStatus.teamName}
-                                </span>
-                                {isMyTeam && (
-                                  <span className="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase">
-                                    My Team
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-[10px] text-slate-400">
-                                {item.rosterStatus.isStarter ? (
-                                  <span className="text-amber-400 font-medium">Starter</span>
-                                ) : item.rosterStatus.isReserve ? (
-                                  <span className="text-rose-400 font-medium">IR/Reserve</span>
-                                ) : item.rosterStatus.isTaxi ? (
-                                  <span className="text-purple-400 font-medium">Taxi</span>
-                                ) : (
-                                  <span>Bench</span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </td>
-
-                      {/* Match Status */}
-                      <td className="py-3 px-3 text-center">
-                        {item.isMatched ? (
-                          <span title="Linked to Sleeper NFL Database" className="inline-flex text-emerald-400">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </span>
-                        ) : (
-                          <button
-                            type="button"
-                            onClick={() => setIsUnmatchedModalOpen(true)}
-                            title="Unmatched to Sleeper ID. Click to inspect."
-                            className="inline-flex text-amber-400 hover:text-amber-300 transition-colors"
-                          >
-                            <ShieldAlert className="w-4 h-4" />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Table Footer */}
-        <div className="px-4 py-3 bg-slate-950/60 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
-          <span>Showing {filteredItems.length} of {dataset.totalRows} ranked players</span>
-          <span>Rankings Engine v1.0</span>
-        </div>
-      </div>
+      {/* Selected Players Multi-Select Action Bar */}
+      <SelectedPlayersBar />
     </div>
   );
 };
