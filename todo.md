@@ -5,15 +5,15 @@ A fantasy football waiver wire assistant and trade analysis web application buil
 ---
 
 ## Phase 1: Project Setup & Build Infrastructure
-- [ ] Initialize React + Vite + TypeScript project in current directory
-- [ ] Configure Tailwind CSS and design tokens (modern sports-analytics dark/light theme, rich UI accents)
-- [ ] Install dependencies:
+- [x] Initialize React + Vite + TypeScript project in current directory
+- [x] Configure Tailwind CSS and design tokens (modern sports-analytics dark/light theme, rich UI accents)
+- [x] Install dependencies:
   - `@tanstack/react-table` (Table management, sorting, filtering, multi-row selection)
   - `papaparse` (Browser-based CSV parsing)
   - `lucide-react` (Icons)
   - `clsx` + `tailwind-merge` (Styling utilities)
-- [ ] Set up Vite base path configuration for GitHub Pages deployment
-- [ ] Create GitHub Actions workflow (`.github/workflows/deploy.yml`) for automated build & deployment to GitHub Pages
+- [x] Set up Vite base path configuration for GitHub Pages deployment
+- [x] Create GitHub Actions workflow (`.github/workflows/deploy.yml`) for automated build & deployment to GitHub Pages
 
 ---
 
