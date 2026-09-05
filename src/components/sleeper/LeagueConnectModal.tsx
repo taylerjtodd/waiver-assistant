@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  Search, 
-  Hash, 
-  User, 
-  Trophy, 
-  Loader2, 
-  AlertCircle, 
-  ArrowRight, 
+import {
+  X,
+  Search,
+  Hash,
+  User,
+  Trophy,
+  Loader2,
+  AlertCircle,
+  ArrowRight,
   Sparkles
 } from 'lucide-react';
 import { useSleeper } from '../../context/SleeperContext';
@@ -21,18 +21,22 @@ interface LeagueConnectModalProps {
 
 export const LeagueConnectModal: React.FC<LeagueConnectModalProps> = ({ isOpen, onClose }) => {
   const { connectLeague, isLoading } = useSleeper();
-  const [tab, setTab] = useState<'id' | 'username'>('id');
-  
+  const [tab, setTab] = useState<'id' | 'username'>('username');
+
   // League ID Form State
   const [leagueIdInput, setLeagueIdInput] = useState('');
-  
+
   // Username Form State
   const [usernameInput, setUsernameInput] = useState('');
   const [seasonInput, setSeasonInput] = useState(new Date().getFullYear().toString());
   const [userLeagues, setUserLeagues] = useState<SleeperLeague[]>([]);
   const [isSearchingUser, setIsSearchingUser] = useState(false);
-  const [searchedUsername, setSearchedUsername] = useState('');
-  
+  const [searchedUser, setSearchedUser] = useState<{
+    userId: string;
+    username?: string | null;
+    displayName: string;
+  } | null>(null);
+
   const [formError, setFormError] = useState<string | null>(null);
 
   if (!isOpen) return null;
@@ -67,9 +71,14 @@ export const LeagueConnectModal: React.FC<LeagueConnectModalProps> = ({ isOpen, 
       const user = await fetchUser(cleanUser);
       const leagues = await fetchUserLeagues(user.user_id, seasonInput);
       setUserLeagues(leagues);
-      setSearchedUsername(user.username);
+      setSearchedUser({
+        userId: user.user_id,
+        username: user.username,
+        displayName: user.display_name || '',
+      });
       if (leagues.length === 0) {
-        setFormError(`No active NFL leagues found for "${user.username}" in season ${seasonInput}.`);
+        const userLabel = user.display_name || user.username || cleanUser;
+        setFormError(`No active NFL leagues found for "${userLabel}" in season ${seasonInput}.`);
       }
     } catch (err: any) {
       setFormError(err.message || 'Could not find user or leagues.');
@@ -81,7 +90,8 @@ export const LeagueConnectModal: React.FC<LeagueConnectModalProps> = ({ isOpen, 
   const handleSelectUserLeague = async (leagueId: string) => {
     setFormError(null);
     try {
-      await connectLeague(leagueId, searchedUsername);
+      const userIdentifier = searchedUser?.userId || searchedUser?.username || usernameInput.trim();
+      await connectLeague(leagueId, userIdentifier);
       onClose();
     } catch (err: any) {
       setFormError(err.message || 'Failed to connect to selected league.');
@@ -90,7 +100,7 @@ export const LeagueConnectModal: React.FC<LeagueConnectModalProps> = ({ isOpen, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div 
+      <div
         className="relative w-full max-w-xl rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl shadow-emerald-950/30 overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
@@ -117,22 +127,20 @@ export const LeagueConnectModal: React.FC<LeagueConnectModalProps> = ({ isOpen, 
         <div className="flex border-b border-slate-800 px-6 pt-3 bg-slate-950/30 gap-2">
           <button
             onClick={() => { setTab('id'); setFormError(null); }}
-            className={`pb-3 px-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-all ${
-              tab === 'id'
+            className={`pb-3 px-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-all ${tab === 'id'
                 ? 'border-emerald-500 text-emerald-400 font-semibold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Hash className="w-4 h-4" />
             <span>Direct League ID</span>
           </button>
           <button
             onClick={() => { setTab('username'); setFormError(null); }}
-            className={`pb-3 px-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-all ${
-              tab === 'username'
+            className={`pb-3 px-3 text-sm font-medium border-b-2 flex items-center gap-2 transition-all ${tab === 'username'
                 ? 'border-emerald-500 text-emerald-400 font-semibold'
                 : 'border-transparent text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <User className="w-4 h-4" />
             <span>Search by Username</span>

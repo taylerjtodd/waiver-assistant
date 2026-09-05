@@ -19,9 +19,9 @@ export const RostersViewer: React.FC = () => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
-      r.teamName.toLowerCase().includes(term) ||
-      r.ownerDisplayName.toLowerCase().includes(term) ||
-      r.ownerUsername.toLowerCase().includes(term)
+      (r.teamName ? r.teamName.toLowerCase().includes(term) : false) ||
+      (r.ownerDisplayName ? r.ownerDisplayName.toLowerCase().includes(term) : false) ||
+      (r.ownerUsername ? r.ownerUsername.toLowerCase().includes(term) : false)
     );
   });
 

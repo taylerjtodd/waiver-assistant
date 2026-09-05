@@ -136,8 +136,9 @@ export const RankingsPreviewTable: React.FC = () => {
       // 6. Search query filter (name, team, or rostered team/owner name)
       if (filters.searchQuery.trim()) {
         const q = filters.searchQuery.toLowerCase().trim();
-        const nameMatch = item.playerName.toLowerCase().includes(q) || 
-          item.originalCsvName.toLowerCase().includes(q);
+        const nameMatch = 
+          (item.playerName ? item.playerName.toLowerCase().includes(q) : false) || 
+          (item.originalCsvName ? item.originalCsvName.toLowerCase().includes(q) : false);
         const teamMatch = item.team ? item.team.toLowerCase().includes(q) : false;
         const rosterTeamMatch = item.rosterStatus.teamName ? item.rosterStatus.teamName.toLowerCase().includes(q) : false;
         const ownerMatch = item.rosterStatus.ownerDisplayName ? item.rosterStatus.ownerDisplayName.toLowerCase().includes(q) : false;

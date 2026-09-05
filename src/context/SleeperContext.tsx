@@ -135,15 +135,32 @@ export const SleeperProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Determine My Roster ID
       let selectedRosterId: number | null = getMyRosterPref(cleanId);
 
-      if (selectedRosterId === null && autoSelectUsername) {
-        // Try to match user by username
+      if (selectedRosterId === null && autoSelectUsername?.trim()) {
+        const query = autoSelectUsername.trim().toLowerCase();
+        // Try to match user safely by user_id, username, or display_name
         const matchedUser = usersData.find(
-          (u) => u.username.toLowerCase() === autoSelectUsername.toLowerCase()
+          (u) =>
+            (u.user_id && u.user_id.toLowerCase() === query) ||
+            (u.username && u.username.toLowerCase() === query) ||
+            (u.display_name && u.display_name.toLowerCase() === query)
         );
         if (matchedUser) {
-          const matchedRoster = rostersData.find((r) => r.owner_id === matchedUser.user_id);
+          const matchedRoster = rostersData.find(
+            (r) => r.owner_id === matchedUser.user_id || (r.co_owners && r.co_owners.includes(matchedUser.user_id))
+          );
           if (matchedRoster) {
             selectedRosterId = matchedRoster.roster_id;
+            setMyRosterPref(cleanId, selectedRosterId);
+          }
+        } else {
+          // If no user object matched, check if autoSelectUsername directly matches a roster owner_id or co-owner
+          const directRoster = rostersData.find(
+            (r) =>
+              (r.owner_id && r.owner_id.toLowerCase() === query) ||
+              (r.co_owners && r.co_owners.some((coId) => coId.toLowerCase() === query))
+          );
+          if (directRoster) {
+            selectedRosterId = directRoster.roster_id;
             setMyRosterPref(cleanId, selectedRosterId);
           }
         }
