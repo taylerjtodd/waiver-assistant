@@ -60,13 +60,18 @@ A fantasy football waiver wire assistant and trade analysis web application buil
 ---
 
 ## Phase 5: Waiver & Trade Assistant Features
-- [ ] Drop Candidate Comparison:
-  - Filter for "Free Agents + [My Roster]" to instantly see where free agents rank above rostered players
-  - Visual delta indicator (e.g., Free Agent ranked #35 vs. Rostered bench player ranked #78)
-- [ ] Multi-Player Trade / Roster Analyzer:
-  - Side-by-side comparison drawer/panel for selected players
-  - Position breakdown and rank comparison
-- [ ] Export filtered view (Export to CSV or copy summary to clipboard)
+- [ ] Selection Bar & Validation:
+  - On row selection, show a selected count indicator and a "Compare / Preview" button
+  - Validation rules: only enable preview when selections are limited to My Team, one other team, and/or Free Agents (disable or alert if players from multiple opposing teams are selected)
+  - Quick action to clear selected players
+- [ ] Transaction Preview View (Drawer / Modal):
+  - **Trade Transaction Preview** (when selections include players from My Team and another team):
+    - Preview transaction assuming players from My Team are traded to the other manager and vice versa
+    - Show side-by-side manager columns with rank, position, and net value/rank deltas
+    - Include a third column displaying any selected Free Agents (e.g. for accompanying waiver adds)
+  - **Waiver Transaction Preview** (when selections only include players from My Team and Free Agents):
+    - Preview waiver transaction assuming selected players from My Team are dropped to make room to add selected Free Agents
+    - Side-by-side comparison of Drop Candidates vs. Waiver Targets with rank delta indicators (visual upgrade/downgrade)
 
 ---
 
