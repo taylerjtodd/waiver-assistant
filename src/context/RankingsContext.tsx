@@ -20,6 +20,8 @@ interface RankingsContextType {
   parseWarnings: string[];
   isUploadModalOpen: boolean;
   setIsUploadModalOpen: (open: boolean) => void;
+  isRankingsDrawerOpen: boolean;
+  setIsRankingsDrawerOpen: (open: boolean) => void;
   isUnmatchedModalOpen: boolean;
   setIsUnmatchedModalOpen: (open: boolean) => void;
   uploadCsvText: (csvText: string, filename?: string) => Promise<boolean>;
@@ -48,6 +50,7 @@ export const RankingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [parseErrors, setParseErrors] = useState<string[]>([]);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState<boolean>(false);
+  const [isRankingsDrawerOpen, setIsRankingsDrawerOpen] = useState<boolean>(false);
   const [isUnmatchedModalOpen, setIsUnmatchedModalOpen] = useState<boolean>(false);
   const [selectedPlayerIds, setSelectedPlayerIds] = useState<string[]>([]);
 
@@ -212,6 +215,8 @@ export const RankingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     parseWarnings,
     isUploadModalOpen,
     setIsUploadModalOpen,
+    isRankingsDrawerOpen,
+    setIsRankingsDrawerOpen,
     isUnmatchedModalOpen,
     setIsUnmatchedModalOpen,
     uploadCsvText,
@@ -235,6 +240,7 @@ export const RankingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     parseErrors,
     parseWarnings,
     isUploadModalOpen,
+    isRankingsDrawerOpen,
     isUnmatchedModalOpen,
     uploadCsvText,
     uploadCsvFile,
