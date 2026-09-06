@@ -74,8 +74,8 @@ function MainDashboard() {
           <button
             onClick={() => setActiveTab('rankings')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all shrink-0 flex items-center gap-2 ${activeTab === 'rankings'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -89,13 +89,13 @@ function MainDashboard() {
           <button
             onClick={() => setActiveTab('rosters')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all shrink-0 ${activeTab === 'rosters'
-                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
               }`}
           >
             League Rosters
           </button>
-          <button
+          {/* <button
             onClick={() => setActiveTab('waiver')}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all shrink-0 ${activeTab === 'waiver'
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
@@ -112,7 +112,7 @@ function MainDashboard() {
               }`}
           >
             Trade Analyzer
-          </button>
+          </button> */}
         </div>
 
         {activeTab === 'rankings' && (
